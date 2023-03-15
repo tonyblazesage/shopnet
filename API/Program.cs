@@ -1,3 +1,4 @@
+using Core.interfaces;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +13,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<Context>(opt => {
     opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+builder.Services.AddScoped<IProductRepo, ProductRepo>();
 
 var app = builder.Build();
 
@@ -27,5 +29,21 @@ if (app.Environment.IsDevelopment())
 app.UseAuthorization();
 
 app.MapControllers();
+
+using var scope = app.Services.CreateScope();
+var services = scope.ServiceProvider;
+var context = services.GetRequiredService<Context>();
+var logger = services.GetRequiredService<ILogger<Program>>();
+try
+{
+    await context.Database.MigrateAsync();
+    await ContextSeed.SeedAsync(context);
+}
+catch (Exception ex)
+{
+    
+    logger.LogError(ex, "An error occurred during database Migration");
+}
+
 
 app.Run();
