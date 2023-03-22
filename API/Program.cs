@@ -1,6 +1,7 @@
 using Core.interfaces;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,7 @@ builder.Services.AddDbContext<Context>(opt => {
 });
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
 builder.Services.AddScoped(typeof(IGenericRepo<>), typeof(GenericRepo<>));
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 var app = builder.Build();
 
@@ -26,6 +28,8 @@ if (app.Environment.IsDevelopment())
 }
 
 //app.UseHttpsRedirection();
+
+app.UseStaticFiles();
 
 app.UseAuthorization();
 
